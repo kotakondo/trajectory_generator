@@ -5,7 +5,7 @@
     pub_freq: 10.0 # Publish frequency (Hz)
 
     # --- Circle trajectory ---
-    r: 3.0 # Radius (m)
+    r: 2.0 # Radius (m)
     center_x: 0.0 # Circle center in odom frame (m)
     center_y: 0.0 # Circle center in odom frame (m)
     v_goals: [0.3, 0.5, 0.8, 1.0] # Target velocities for each segment (m/s)
@@ -15,7 +15,8 @@
     # --- Figure-8 trajectory ---
     amplitude_x: 5.0 # Half-width in X (m). Path spans [-amplitude_x, +amplitude_x].
     amplitude_y: 3.0 # Half-height in Y (m). Path spans [-amplitude_y/2, +amplitude_y/2].
-    num_points: 200 # Number of waypoints along the figure-8 loop
+    v_fig8: 0.8 # Cruise velocity (m/s)
+    fig8_laps: 50 # Number of figure-8 loops to generate
 
     # --- Line trajectory (back-and-forth) ---
     Ax: 0.0 # Start point A in odom frame (m)
@@ -23,4 +24,4 @@
     Bx: 8.0  # End point B in odom frame (m)
     By: 0.0  # End point B in odom frame (m)
     v_line: 0.8 # Cruise velocity (m/s)
-    num_laps: 20 # Number of round trips (A→B→A = 1 lap)
+    num_laps: 50 # Number of round trips (A→B→A = 1 lap)

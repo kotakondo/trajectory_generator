@@ -45,10 +45,11 @@ protected:
      * Create a PoseStamped from position (x, y, 0) and yaw angle.
      * Quaternion from yaw: q.w = cos(yaw/2), q.z = sin(yaw/2), q.x = q.y = 0
      */
-    static geometry_msgs::msg::PoseStamped createPoseStamped(double x, double y, double yaw)
+    static geometry_msgs::msg::PoseStamped createPoseStamped(
+        double x, double y, double yaw, const std::string& frame_id = "odom")
     {
         geometry_msgs::msg::PoseStamped ps;
-        ps.header.frame_id = "odom";
+        ps.header.frame_id = frame_id;
         ps.pose.position.x = x;
         ps.pose.position.y = y;
         ps.pose.position.z = 0.0;  // ground robot

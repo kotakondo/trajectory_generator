@@ -12,6 +12,7 @@
 
 #include <rclcpp/rclcpp.hpp>
 #include <nav_msgs/msg/path.hpp>
+#include <nav_msgs/msg/odometry.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 
@@ -33,12 +34,29 @@ public:
 
 private:
     void timerCallback();
+    void odomCallback(const nav_msgs::msg::Odometry::SharedPtr msg);
+    void initializeTrajectory(double rx, double ry, double ryaw);
+    void applyPoseOffset(std::vector<geometry_msgs::msg::PoseStamped>& waypoints,
+                         double rx, double ry, double ryaw);
 
     void buildPath(const std::vector<geometry_msgs::msg::PoseStamped>& waypoints);
     void buildMarkers(const std::vector<geometry_msgs::msg::PoseStamped>& waypoints);
 
     // Trajectory
     std::unique_ptr<Trajectory> traj_;
+
+    // Frame ID derived from namespace (e.g. "RR03/odom")
+    std::string odom_frame_id_;
+
+    // Deferred initialization state
+    bool trajectory_ready_ = false;
+    std::string traj_type_;
+    double pub_freq_;
+    double dt_;
+
+    // Odom subscription (reset after first message)
+    rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub_;
+    rclcpp::TimerBase::SharedPtr odom_warn_timer_;
 
     // Pre-computed messages
     nav_msgs::msg::Path path_msg_;

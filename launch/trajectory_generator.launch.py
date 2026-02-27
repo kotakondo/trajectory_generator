@@ -35,6 +35,11 @@ def generate_launch_description():
         default_value=EnvironmentVariable('ROVER_NAME', default_value='RR03'),
         description='Robot namespace for all topics',
     )
+    odom_topic_arg = DeclareLaunchArgument(
+        'odom_topic',
+        default_value='odom',
+        description='Input odometry topic name (relative to namespace)',
+    )
 
     traj_shape = LaunchConfiguration('traj_shape')
 
@@ -55,10 +60,14 @@ def generate_launch_description():
             params_file,
             {'traj_type': traj_type_expr},
         ],
+        remappings=[
+            ('odom', LaunchConfiguration('odom_topic')),
+        ],
     )
 
     return LaunchDescription([
         traj_shape_arg,
         robot_name_arg,
+        odom_topic_arg,
         traj_gen_node,
     ])

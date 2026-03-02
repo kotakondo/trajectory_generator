@@ -19,70 +19,83 @@ void Line::generateTraj(std::vector<geometry_msgs::msg::PoseStamped>& waypoints)
     double dy_AB = By_ - Ay_;
     double line_length = std::sqrt(dx_AB * dx_AB + dy_AB * dy_AB);
 
-    // Unit vector A → B
-    double ux = dx_AB / line_length;
-    double uy = dy_AB / line_length;
+    double step = v_goal_ * dt_;
 
     double forward_theta = theta_;
     double reverse_theta = theta_ + M_PI;
-    if (reverse_theta > M_PI) reverse_theta -= 2.0 * M_PI;
 
-    double step = v_goal_ * dt_;
+    // Smooth U-turn radius at each endpoint.
+    // Keeps the robot moving continuously instead of stopping for turn-in-place.
+    // The path becomes a racetrack/stadium shape: forward leg, semicircular
+    // U-turn, parallel return leg (offset by 2*r), semicircular U-turn back.
+    const double turn_radius = 1.0;
 
-    // Extend each leg past the nominal endpoint so the pure pursuit
-    // lookahead has real distance before the turn cluster and can't
-    // "see" the return leg prematurely.
-    const double run_out = 0.3;  // meters past each endpoint (matches PP crossing threshold)
-    double ext_length = line_length + 2.0 * run_out;
+    // Perpendicular unit vector (left of A→B direction)
+    double perp_x = -std::sin(theta_);
+    double perp_y =  std::cos(theta_);
 
-    // Extended endpoints
-    double ext_Ax = Ax_ - run_out * ux;
-    double ext_Ay = Ay_ - run_out * uy;
-    double ext_Bx = Bx_ + run_out * ux;
-    double ext_By = By_ + run_out * uy;
-    double ext_dx = ext_Bx - ext_Ax;
-    double ext_dy = ext_By - ext_Ay;
+    // Return leg is offset perpendicular to the forward leg by 2*turn_radius
+    double offset_x = 2.0 * turn_radius * perp_x;
+    double offset_y = 2.0 * turn_radius * perp_y;
 
-    int points_per_leg = std::max(1, static_cast<int>(std::round(ext_length / step)));
+    int points_per_leg = std::max(1, static_cast<int>(std::round(line_length / step)));
 
-    // Turn clusters: a small group of waypoints at the extended endpoint
-    // with reversed heading.  The pure pursuit controller's turn-in-place
-    // logic (heading error > 60°) handles the 180° rotation naturally.
-    const int turn_cluster = 5;
+    // Semicircular U-turn: arc_length = pi * r
+    double arc_length = M_PI * turn_radius;
+    int points_per_turn = std::max(4, static_cast<int>(std::round(arc_length / step)));
 
-    // Each "lap" is one round trip: ext_A → ext_B → ext_A
     for (int lap = 0; lap < num_laps_; ++lap)
     {
-        // Forward leg: ext_A → ext_B
-        for (int i = 0; i <= points_per_leg; ++i)
+        // ---- Forward leg: A → B ----
+        int fwd_start = (lap == 0) ? 0 : 1;  // avoid duplicate point at lap boundary
+        for (int i = fwd_start; i <= points_per_leg; ++i)
         {
             double t = static_cast<double>(i) / points_per_leg;
-            double x = ext_Ax + t * ext_dx;
-            double y = ext_Ay + t * ext_dy;
+            double x = Ax_ + t * dx_AB;
+            double y = Ay_ + t * dy_AB;
             waypoints.push_back(createPoseStamped(x, y, forward_theta));
         }
 
-        // Turn cluster at ext_B (heading reversed)
-        for (int i = 0; i < turn_cluster; ++i)
+        // ---- U-turn at B (counterclockwise semicircle) ----
         {
-            waypoints.push_back(createPoseStamped(ext_Bx, ext_By, reverse_theta));
+            double cx = Bx_ + turn_radius * perp_x;
+            double cy = By_ + turn_radius * perp_y;
+            double start_angle = theta_ - M_PI / 2.0;
+
+            for (int i = 1; i <= points_per_turn; ++i)
+            {
+                double t = static_cast<double>(i) / points_per_turn;
+                double angle = start_angle + t * M_PI;
+                double x = cx + turn_radius * std::cos(angle);
+                double y = cy + turn_radius * std::sin(angle);
+                double heading = angle + M_PI / 2.0;
+                waypoints.push_back(createPoseStamped(x, y, heading));
+            }
         }
 
-        // Return leg: ext_B → ext_A
-        for (int i = 0; i <= points_per_leg; ++i)
+        // ---- Return leg: B_offset → A_offset ----
+        for (int i = 1; i <= points_per_leg; ++i)
         {
             double t = static_cast<double>(i) / points_per_leg;
-            double x = ext_Bx - t * ext_dx;
-            double y = ext_By - t * ext_dy;
+            double x = Bx_ + offset_x - t * dx_AB;
+            double y = By_ + offset_y - t * dy_AB;
             waypoints.push_back(createPoseStamped(x, y, reverse_theta));
         }
 
-        // Turn cluster at ext_A (heading forward) — except on last lap
-        if (lap < num_laps_ - 1)
+        // ---- U-turn at A (counterclockwise semicircle) ----
         {
-            for (int i = 0; i < turn_cluster; ++i)
+            double cx = Ax_ + turn_radius * perp_x;
+            double cy = Ay_ + turn_radius * perp_y;
+            double start_angle = theta_ + M_PI / 2.0;
+
+            for (int i = 1; i <= points_per_turn; ++i)
             {
-                waypoints.push_back(createPoseStamped(ext_Ax, ext_Ay, forward_theta));
+                double t = static_cast<double>(i) / points_per_turn;
+                double angle = start_angle + t * M_PI;
+                double x = cx + turn_radius * std::cos(angle);
+                double y = cy + turn_radius * std::sin(angle);
+                double heading = angle + M_PI / 2.0;
+                waypoints.push_back(createPoseStamped(x, y, heading));
             }
         }
     }
@@ -91,8 +104,16 @@ void Line::generateTraj(std::vector<geometry_msgs::msg::PoseStamped>& waypoints)
 bool Line::trajectoryInsideBounds(double xmin, double xmax,
                                   double ymin, double ymax)
 {
+    const double turn_radius = 1.0;
+    double perp_x = -std::sin(theta_);
+    double perp_y =  std::cos(theta_);
+    double off_x = 2.0 * turn_radius * perp_x;
+    double off_y = 2.0 * turn_radius * perp_y;
+
     return isPointInsideBounds(xmin, xmax, ymin, ymax, Ax_, Ay_) &&
-           isPointInsideBounds(xmin, xmax, ymin, ymax, Bx_, By_);
+           isPointInsideBounds(xmin, xmax, ymin, ymax, Bx_, By_) &&
+           isPointInsideBounds(xmin, xmax, ymin, ymax, Ax_ + off_x, Ay_ + off_y) &&
+           isPointInsideBounds(xmin, xmax, ymin, ymax, Bx_ + off_x, By_ + off_y);
 }
 
 } // namespace trajectory_generator

@@ -21,7 +21,7 @@
     # --- Line trajectory (back-and-forth) ---
     Ax: 0.0 # Start point A in odom frame (m)
     Ay: 0.0 # Start point A in odom frame (m)
-    Bx: 6.0  # End point B in odom frame (m)
+    Bx: 5.0  # End point B in odom frame (m)
     By: 0.0  # End point B in odom frame (m)
     v_line: 0.5 # Cruise velocity (m/s)
     num_laps: 50 # Number of round trips (A→B→A = 1 lap)

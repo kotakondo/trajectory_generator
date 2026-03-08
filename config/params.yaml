@@ -5,7 +5,7 @@
     pub_freq: 10.0 # Publish frequency (Hz)
 
     # --- Circle trajectory ---
-    r: 3.0 # Radius (m)
+    r: 2.5 # Radius (m)
     center_x: 0.0 # Circle center in odom frame (m)
     center_y: 0.0 # Circle center in odom frame (m)
     v_goals: [1.0, 1.0, 1.0, 1.0] # Target velocities for each segment (m/s)
@@ -24,4 +24,5 @@
     Bx: 5.0  # End point B in odom frame (m)
     By: 0.0  # End point B in odom frame (m)
     v_line: 0.5 # Cruise velocity (m/s)
-    num_laps: 50 # Number of round trips (A→B→A = 1 lap)
+    num_laps: 300 # Number of round trips (A→B→A = 1 lap)
+    smooth_turns: false # true = smooth U-turn arcs, false = turn-in-place at endpoints

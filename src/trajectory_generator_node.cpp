@@ -50,6 +50,7 @@ TrajectoryGeneratorNode::TrajectoryGeneratorNode(const rclcpp::NodeOptions& opti
     this->declare_parameter<double>("By", 0.0);
     this->declare_parameter<double>("v_line", 0.8);
     this->declare_parameter<int>("num_laps", 20);
+    this->declare_parameter<bool>("smooth_turns", true);
 
     // Read parameters needed before odom arrives
     traj_type_ = this->get_parameter("traj_type").as_string();
@@ -176,7 +177,8 @@ void TrajectoryGeneratorNode::initializeTrajectory(double rx, double ry, double 
             throw std::runtime_error("Invalid num_laps");
         }
 
-        traj_ = std::make_unique<Line>(Ax, Ay, Bx, By, v_line, num_laps, dt_);
+        bool smooth_turns = this->get_parameter("smooth_turns").as_bool();
+        traj_ = std::make_unique<Line>(Ax, Ay, Bx, By, v_line, num_laps, dt_, smooth_turns);
 
         // Generate trajectory waypoints
         std::vector<geometry_msgs::msg::PoseStamped> waypoints;

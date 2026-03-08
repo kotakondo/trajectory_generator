@@ -21,9 +21,9 @@ class Line : public Trajectory
 public:
 
     Line(double Ax, double Ay, double Bx, double By,
-         double v_goal, int num_laps, double dt)
+         double v_goal, int num_laps, double dt, bool smooth_turns = true)
         : Trajectory(dt), Ax_(Ax), Ay_(Ay), Bx_(Bx), By_(By),
-          v_goal_(v_goal), num_laps_(num_laps)
+          v_goal_(v_goal), num_laps_(num_laps), smooth_turns_(smooth_turns)
     {
         theta_ = std::atan2(By_ - Ay_, Bx_ - Ax_);
     }
@@ -41,6 +41,7 @@ private:
     double Bx_, By_;    // end point
     double v_goal_;     // cruise velocity, m/s
     int num_laps_;      // number of round trips (A→B→A = 1 lap)
+    bool smooth_turns_; // true = U-turn arcs, false = turn-in-place
     double theta_;      // angle from A to B
 };
 

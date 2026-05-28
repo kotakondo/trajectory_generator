@@ -104,7 +104,7 @@ GoalReplayNode::GoalReplayNode(const rclcpp::NodeOptions& options)
     approach_enabled_            = this->declare_parameter<bool>("approach_enabled", true);
     approach_speed_              = this->declare_parameter<double>("approach_speed", 1.0);
     approach_min_time_           = this->declare_parameter<double>("approach_min_time", 2.0);
-    takeoff_z_                   = this->declare_parameter<double>("takeoff_z", 1.0);
+    takeoff_z_                   = this->declare_parameter<double>("takeoff_z", 2.0);
 
     if (csv_path.empty()) {
         RCLCPP_ERROR(this->get_logger(), "Parameter 'csv_path' is required.");

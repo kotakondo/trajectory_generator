@@ -57,7 +57,7 @@ def generate_launch_description():
         DeclareLaunchArgument('approach_enabled', default_value='true'),
         DeclareLaunchArgument('approach_speed', default_value='1.0'),
         DeclareLaunchArgument('approach_min_time', default_value='2.0'),
-        DeclareLaunchArgument('takeoff_z', default_value='1.0'),
+        DeclareLaunchArgument('takeoff_z', default_value='2.0'),
     ]
 
     replay_node = Node(

@@ -41,7 +41,7 @@ def generate_launch_description():
         DeclareLaunchArgument('start_delay', default_value='3.0'),
         DeclareLaunchArgument('approach_enabled', default_value='true'),
         DeclareLaunchArgument('approach_speed', default_value='1.0'),
-        DeclareLaunchArgument('takeoff_z', default_value='1.0'),
+        DeclareLaunchArgument('takeoff_z', default_value='2.0'),
         DeclareLaunchArgument('rate_scale', default_value='1.0'),
         DeclareLaunchArgument('use_rviz', default_value='true'),
     ]

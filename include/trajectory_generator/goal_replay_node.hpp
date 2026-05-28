@@ -45,7 +45,7 @@ private:
     bool approach_enabled_{true};
     double approach_speed_{1.0};     // cruise speed used to size the approach duration (m/s)
     double approach_min_time_{2.0};  // minimum approach duration (s)
-    double takeoff_z_{1.0};          // altitude to climb to in place before transiting (m)
+    double takeoff_z_{2.0};          // altitude to climb to in place before transiting (m)
 
     // Latest measured drone position, if received. (Approach is planned from rest,
     // so only position is needed — velocity is taken as zero.)

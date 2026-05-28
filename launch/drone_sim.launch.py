@@ -25,8 +25,8 @@ from ament_index_python.packages import get_package_share_directory
 
 def generate_launch_description():
     pkg_share = get_package_share_directory('trajectory_generator')
-    default_csv = os.path.join(pkg_share, 'trajectories',
-                               'model_quadloop_to_3_2_1_back_spline10_autostretch.csv')
+    default_csv = os.path.join(pkg_share, 'ref_traj',
+                               'model_quadloop_to_3_2_1_back_spline10_autostretch_zplus1.csv')
     rviz_cfg = os.path.join(pkg_share, 'config', 'drone_sim.rviz')
 
     args = [

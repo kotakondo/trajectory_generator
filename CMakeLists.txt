@@ -110,7 +110,7 @@ install(TARGETS
 install(DIRECTORY
   launch
   config
-  trajectories
+  ref_traj
   DESTINATION share/${PROJECT_NAME}
 )
 

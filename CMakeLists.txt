@@ -17,8 +17,11 @@ find_package(nav_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(visualization_msgs REQUIRED)
 find_package(tf2 REQUIRED)
+find_package(tf2_ros REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(Eigen3 REQUIRED)
+find_package(std_srvs REQUIRED)
+find_package(dynus_interfaces REQUIRED)
 
 # ---- Library: trajectory_generator_core ----
 add_library(trajectory_generator_core STATIC
@@ -63,15 +66,51 @@ ament_target_dependencies(trajectory_generator_node
   tf2_geometry_msgs
 )
 
+# ---- Executable: goal_replay_node ----
+add_executable(goal_replay_node
+  src/goal_replay_node.cpp
+)
+
+target_include_directories(goal_replay_node PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+)
+
+ament_target_dependencies(goal_replay_node
+  rclcpp
+  std_srvs
+  dynus_interfaces
+  nav_msgs
+  geometry_msgs
+)
+
+# ---- Executable: perfect_tracker_node ----
+add_executable(perfect_tracker_node
+  src/perfect_tracker_node.cpp
+)
+
+ament_target_dependencies(perfect_tracker_node
+  rclcpp
+  dynus_interfaces
+  visualization_msgs
+  nav_msgs
+  geometry_msgs
+  tf2
+  tf2_ros
+)
+
 # ---- Install ----
 install(TARGETS
   trajectory_generator_node
+  goal_replay_node
+  perfect_tracker_node
   DESTINATION lib/${PROJECT_NAME}
 )
 
 install(DIRECTORY
   launch
   config
+  trajectories
   DESTINATION share/${PROJECT_NAME}
 )
 
